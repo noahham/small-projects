@@ -167,7 +167,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
                 if settings.secondsCheck {
                     let hoursLeft = Int(timeLeft / 3600)
                     let minutesLeft = Int((timeLeft.truncatingRemainder(dividingBy: 3600)) / 60)
-                    let secondsLeft = Int((timeLeft.truncatingRemainder(dividingBy: 3600))) - (minutesLeft * 60) // FIXME: MATH IS WRONG
+                    let secondsLeft = Int((timeLeft.truncatingRemainder(dividingBy: 3600))) - (minutesLeft * 60)
                     statusItem?.button?.title = "\(hoursLeft)h \(minutesLeft)m \(secondsLeft)s"
                 } else {
                     let hoursLeft = Int(timeLeft / 3600)
