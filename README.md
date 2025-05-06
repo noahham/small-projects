@@ -2,7 +2,7 @@
 
 This repository is where I put the ugly, horribly made projects that let me learn new things.
 
-## Why this exists
+## Why This Exists
 
 This repo contains various bite-sized projects I worked on to:
 
