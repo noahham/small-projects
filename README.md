@@ -4,7 +4,7 @@ This repository is where I put the ugly, horribly made projects that let me lear
 
 ## Why This Exists
 
-This repo contains various bite-sized projects I worked on to:
+This repo contains various small projects I worked on to:
 
 - Learn new programming languages or frameworks
 - Understand algorithms and data structures
@@ -19,3 +19,5 @@ Each folder contains a self-contained mini project with its own README. Here's a
 - *Escape the Space Station*:&emsp;My first ever Java program.
 - *Color Palette*:&emsp;Using random Python libraries and actually solving one of my real world problems.
 - *Countdown*:&emsp;My first ever Swift project.
+- *Character-Split*:&emsp;My first After Effects script.
+- *R.E.P.O. Flashbang:&emsp;Trying out regex and keyboard input from Python.
