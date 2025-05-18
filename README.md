@@ -20,4 +20,4 @@ Each folder contains a self-contained mini project with its own README. Here's a
 - *Color Palette*:&emsp;Using random Python libraries and actually solving one of my real world problems.
 - *Countdown*:&emsp;My first ever Swift project.
 - *Character-Split*:&emsp;My first After Effects script.
-- *R.E.P.O. Flashbang:&emsp;Trying out regex and keyboard input from Python.
+- *R.E.P.O. Flashbang*:&emsp;Trying out regex and keyboard input from Python.
