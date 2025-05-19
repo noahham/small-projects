@@ -6,6 +6,7 @@ import wave
 import time
 import sys
 import os
+import threading
 
 def list_audio_devices():
     """List all available audio input and output devices"""
@@ -55,8 +56,14 @@ def get_device_channel_count(device_index, for_output=True):
     p.terminate()
     return channels
 
-def play_audio_file_through_device(file_path, output_device_index):
-    """Play audio file through specified output device"""
+def play_audio_file_through_device(file_path, output_device_index, message_delay_seconds):
+    """Play audio file through specified output device and signal when to send message
+    
+    Args:
+        file_path: Path to the audio file
+        output_device_index: Audio output device index
+        message_delay_seconds: Delay in seconds before sending the message
+    """
     if not os.path.exists(file_path):
         print(f"Error: File '{file_path}' not found!")
         return False
@@ -73,13 +80,6 @@ def play_audio_file_through_device(file_path, output_device_index):
         # Get device channel count
         device_channels = get_device_channel_count(output_device_index)
         
-        # Print debug info
-        print(f"\nAudio file: {file_path}")
-        print(f"  - Channels: {file_channels}")
-        print(f"  - Sample Width: {sample_width} bytes")
-        print(f"  - Frame Rate: {frame_rate} Hz")
-        print(f"Output device (index {output_device_index}) supports {device_channels} channels")
-        
         # Initialize PyAudio
         p = pyaudio.PyAudio()
         
@@ -94,49 +94,43 @@ def play_audio_file_through_device(file_path, output_device_index):
                         output_device_index=output_device_index)
         
         # Read data in chunks and play it
-        print(f"Playing audio through device index {output_device_index}...")
         chunk_size = 1024
         data = wf.readframes(chunk_size)
+        
+        # Start playing audio
+        start_time = time.time()
+        message_sent = False
         
         while len(data) > 0:
             stream.write(data)
             data = wf.readframes(chunk_size)
+            
+            # Signal to send message after specified delay in seconds
+            # This will happen while audio is still playing
+            current_time = time.time()
+            elapsed_time = current_time - start_time
+            
+            if not message_sent and elapsed_time >= message_delay_seconds:
+                message_sent = True
+
+                # Signal the main thread that it's time to send the message
+                global should_send_message
+                should_send_message = True
         
         # Close everything
         stream.stop_stream()
         stream.close()
         wf.close()
         p.terminate()
-        print("Finished playing audio")
         
     except Exception as e:
         print(f"Error playing audio: {str(e)}")
         return False
 
-def main():
-    # Default file path - can be changed
-    file_path = "sfx.wav"
-    virtual_mic_name = "CABLE INPUT"
-    
-    # Ask for file if not provided or not found
-    if len(sys.argv) > 1:
-        file_path = sys.argv[1]
-    
-    if not os.path.exists(file_path):
-        print(f"File '{file_path}' not found. Please enter the path to your sound file:")
-        file_path = input("> ").strip()
-    
-    # Find the CABLE Output device index (this is what we want to play through)
-    cable_device_index = find_device_index(virtual_mic_name)
-    
-    if cable_device_index is None:
-        print("\nCould not find CABLE Input device.")
-    
-    # Play audio through the selected device
-    play_audio_file_through_device(file_path, cable_device_index)
-    
-
 def send_repo_chat_message(message: str, window_title_regex: str = r".*R\.E\.P\.O.*"):
+    """Send a message to the R.E.P.O. chat window."""
+    keyboard = Controller()
+
     try:
         app = Application().connect(title_re=window_title_regex)
     except findwindows.ElementNotFoundError:
@@ -157,9 +151,60 @@ def send_repo_chat_message(message: str, window_title_regex: str = r".*R\.E\.P\.
     keyboard.press(Key.enter)
     keyboard.release(Key.enter)
 
-if __name__ == "__main__":
-    main()
+def flash(chat_message, virtual_mic_name="CABLE INPUT", sfx_path="sfx.wav", delay=1, sound=True):
+    """
+    Flash a message in the R.E.P.O. chat and play a sound.
     
-    keyboard = Controller()
-    chat_message = "<size=-11111><mark=#ffffff>FLASH"
-    send_repo_chat_message(chat_message)
+    Args:
+        chat_message: The message to send.
+        virtual_mic_name: The name of the virtual mic device (default: "CABLE INPUT").
+        sfx_path: Path to the sound file (default: "sfx.wav").
+        delay: Delay in seconds before sending the message (default: 1).
+        sound: Whether to play the sound (default: True).
+    """
+    if sound:
+        # Ask for file if not provided or not found
+        if len(sys.argv) > 1:
+            sfx_path = sys.argv[1]
+        
+        if not os.path.exists(sfx_path):
+            print(f"File '{sfx_path}' not found. Please enter the path to your sound file:")
+            sfx_path = input("> ").strip()
+        
+        # Find the CABLE Output device index (this is what we want to play through)
+        cable_device_index = find_device_index(virtual_mic_name)
+        
+        if cable_device_index is None:
+            print("\nCould not find CABLE Input device.")
+            return
+        
+        # Global variable to signal when to send the message
+        global should_send_message
+        should_send_message = False
+        
+        # Create and start the audio thread
+        audio_thread = threading.Thread(
+            target=play_audio_file_through_device, 
+            args=(sfx_path, cable_device_index, delay)
+        )
+        audio_thread.start()
+        
+        # Monitor the signal from the audio thread
+        while audio_thread.is_alive():
+            if should_send_message:
+                send_repo_chat_message(chat_message)
+                print("Flashed.")
+                should_send_message = False  # Reset the flag
+                break
+            time.sleep(0.01)  # Small sleep to prevent CPU hogging
+        
+        # Wait for audio to finish
+        audio_thread.join()
+    else:
+        # If sound is disabled, just send the message
+        send_repo_chat_message(chat_message)
+        print("Flashed without sound.")
+
+if __name__ == "__main__":
+    message = "<size=-11111><mark=#ffffff>."
+    flash(message, delay=1, sfx_path="sfx.wav", sound=True)
