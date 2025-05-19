@@ -17,9 +17,8 @@ This Python script sends an automated chat message to a window with a title matc
 
 ## Requirements
 
-VBCABLE Drivers
-VoiceMeeter
-Install dependencies with:
+- VBCABLE Drivers
 
-```bash
-pip install -r requirements.txt
+- VoiceMeeter
+
+- Dependencies in `requirements.txt`.
