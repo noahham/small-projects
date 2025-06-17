@@ -7,6 +7,7 @@ import time
 import sys
 import os
 import threading
+import keyboard
 
 def list_audio_devices():
     """List all available audio input and output devices"""
@@ -206,5 +207,6 @@ def flash(chat_message, virtual_mic_name="CABLE INPUT", sfx_path="sfx.wav", dela
         print("Flashed without sound.")
 
 if __name__ == "__main__":
-    message = "<size=-11111><mark=#ffffff>."
-    flash(message, delay=1, sfx_path="sfx.wav", sound=True)
+    message = "<size=-11111><mark=#ffffff>FLASH"
+    keyboard.add_hotkey("backspace", lambda: flash(message, delay=0, sfx_path="sfx.wav", sound=False))
+    keyboard.wait()
