@@ -14,4 +14,27 @@ p {
     font-family: 'Tiny5', sans-serif;
     font-size: 24px;
     color: white;
+    text-align: center;
+}
+
+.game-container {
+    width: 1000px;
+    height: 800px;
+    background-color: #222;
+    position: relative;
+    overflow: hidden;
+}
+
+#player {
+    width: 80px;
+    height: 120px;
+    background-color: red;
+    position: absolute;
+}
+
+.obstacle {
+    width: 80px;
+    height: 120px;
+    background-color: blue;
+    position: absolute;
 }
